@@ -23,7 +23,7 @@ RUN mkdir -p source && \
   cd source && \
   git clone https://github.com/trilinos/Trilinos.git trilinos && \
   cd trilinos && \
-  git checkout develop && \
+  git checkout f54a04bf && \
   popd && \
   mkdir -p build/trilinos && \
   cd build/trilinos && \
@@ -47,6 +47,8 @@ RUN mkdir -p source && \
 RUN pushd . && \
   cd source && \
   git clone https://github.com/gahansen/Albany.git albany && \
+  cd albany && \
+  git checkout 9ca6665e && \
   popd && \
   mkdir -p build/albany && \
   cd build/albany && \
