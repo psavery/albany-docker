@@ -1,4 +1,4 @@
-FROM library/ubuntu:16.04 AS build
+FROM library/ubuntu:18.04 AS build
 MAINTAINER Kitware <kitware@kitware.com>
 
 SHELL ["/bin/bash", "-c"]
@@ -48,7 +48,7 @@ RUN pushd . && \
   cd source && \
   git clone https://github.com/gahansen/Albany.git albany && \
   cd albany && \
-  git checkout 9ca6665e && \
+  git checkout 1bc97775 && \
   popd && \
   mkdir -p build/albany && \
   cd build/albany && \
@@ -76,14 +76,14 @@ RUN pushd . && \
   make -j "$(nproc)" install
 
 # Create new image
-FROM library/ubuntu:16.04
+FROM library/ubuntu:18.04
 
 # Install runtime deps
 RUN apt-get update && apt-get -y install \
   libblas3 \
   liblapack3 \
-  libboost-program-options1.58 \
-  libhdf5-10 \
+  libboost-program-options1.65 \
+  libhdf5-100 \
   libmpich12 \
   libnetcdf-c++4
 
