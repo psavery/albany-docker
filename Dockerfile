@@ -4,6 +4,7 @@ MAINTAINER Kitware <kitware@kitware.com>
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get -y install \
+  wget \
   git \
   g++ \
   gfortran \
@@ -14,9 +15,30 @@ RUN apt-get update && apt-get -y install \
   libboost-system-dev \
   libboost-program-options-dev \
   libboost-signals-dev \
-  libhdf5-dev \
+  libhdf5-mpich-dev \
   libmpich-dev \
-  libnetcdf-dev
+  libpnetcdf-dev \
+  libcurl4-openssl-dev \
+  m4
+
+RUN mkdir -p source && \
+  pushd . && \
+  cd source && \
+  git clone https://github.com/psavery/netcdf-patch && \
+  wget https://github.com/Unidata/netcdf-c/archive/v4.6.0.tar.gz && \
+  tar -xzf v4.6.0.tar.gz && \
+  cd netcdf-c-4.6.0 && \
+  patch include/netcdf.h ../netcdf-patch/netcdf.h.patch && \
+  grep -B 8 -A 2 "#define NC_MAX_VAR_DIMS" include/netcdf.h && \
+  ./configure CC=mpicc FC=mpifort CXX=mpicxx \
+  CFLAGS="-fPIC -I/usr/include/hdf5/mpich -march=native -O3" \
+  CXXFLAGS="-fPIC -I/usr/include/hdf5/mpich -march=native -O3" \
+  FCFLAGS="-fPIC -march=native -Wa,-q -O3" \
+  LDFLAGS="-L/usr/lib/x86_64-linux-gnu/hdf5/mpich" \
+  --disable-fsync --disable-doxygen --enable-netcdf4 --enable-pnetcdf \
+  --prefix=/source/netcdf-install && \
+  make -j "$(nproc)" install && \
+  cp -r /source/netcdf-install/* /usr/
 
 RUN mkdir -p source && \
   pushd . && \
@@ -83,9 +105,13 @@ RUN apt-get update && apt-get -y install \
   libblas3 \
   liblapack3 \
   libboost-program-options1.65 \
-  libhdf5-100 \
+  libhdf5-mpich-100 \
   libmpich12 \
-  libnetcdf-c++4
+  libpnetcdf0d \
+  libcurl4
+
+# Copy netcdf from build image
+COPY --from=build /source/netcdf-install /usr/
 
 # Copy Trilinos from build image
 COPY --from=build /usr/local/trilinos /usr/local/trilinos
